@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.database.db import get_db
 from app.schemas.user_schema import UserCreate, UserResponse
 from app.schemas.auth_schema import BootstrapAdminRequest, LoginRequest, TokenResponse, VerifyEmailRequest, ResendOtpRequest
-from app.services.auth_service import verify_email, register_user, login_user, bootstrap_admin
+from app.services.auth_service import verify_email, register_user, login_user, bootstrap_admin, resend_otp
 from app.core.security import create_access_token
 from app.services.auth_service import resend_otp
 
@@ -27,7 +27,6 @@ def verify_email(data: VerifyEmailRequest, db: Session = Depends(get_db)):
     if result == "invalid":
         raise HTTPException(status_code=400, detail="Incorrect OTP")
     return {"message": "Email verified successfully"}
-
 
 @router.post("/login", response_model=TokenResponse)
 def login(data: LoginRequest, db: Session = Depends(get_db)):
