@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 
 from app.database.db import get_db
 from app.schemas.user_schema import UserCreate, UserResponse
-from app.schemas.auth_schema import LoginRequest, TokenResponse, VerifyEmailRequest, ResendOtpRequest
-from app.services.auth_service import verify_email, register_user, login_user
+from app.schemas.auth_schema import BootstrapAdminRequest, LoginRequest, TokenResponse, VerifyEmailRequest, ResendOtpRequest
+from app.services.auth_service import verify_email, register_user, login_user, bootstrap_admin
 from app.core.security import create_access_token
 from app.services.auth_service import resend_otp
 
@@ -48,3 +48,12 @@ def resend_otp(data: ResendOtpRequest, db: Session = Depends(get_db)):
     if result == "already_verified":
         raise HTTPException(status_code=400, detail="This email is already verified")
     return {"message": "A new verification code has been sent to your email"}
+
+@router.post("/bootstrap-admin")
+def bootstrap_admin(data: BootstrapAdminRequest, db: Session = Depends(get_db)):
+    result = bootstrap_admin(db, data.email)
+    if result == "admin_exists":
+        raise HTTPException(status_code=403, detail="An admin already exists. This endpoint is disabled.")
+    if result == "user_not_found":
+        raise HTTPException(status_code=404, detail="No account found with this email. Register first.")
+    return {"message": f"{data.email} is now a super admin."}

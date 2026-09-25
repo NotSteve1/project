@@ -14,3 +14,6 @@ class VerifyEmailRequest(BaseModel):
 
 class ResendOtpRequest(BaseModel):
     email: EmailStr    
+
+class BootstrapAdminRequest(BaseModel):
+    email: EmailStr    

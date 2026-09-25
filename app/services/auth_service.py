@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
 
-from app.models.user_model import User
+from app.models.user_model import User, UserRole
 from app.models.email_otp_model import EmailVerificationOTP
 from app.schemas.user_schema import UserCreate
 from app.schemas.auth_schema import LoginRequest, VerifyEmailRequest
@@ -107,3 +107,19 @@ def resend_otp(db: Session, email: str) -> str:
 
     _generate_and_send_otp(db, user)
     return "sent"
+
+def bootstrap_admin(db: Session, email: str) -> str:
+    """Returns: 'success' | 'admin_exists' | 'user_not_found'"""
+    existing_admin = db.query(User).filter(
+        User.role.in_([UserRole.ADMIN, UserRole.SUPER_ADMIN])
+    ).first()
+    if existing_admin:
+        return "admin_exists"
+
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        return "user_not_found"
+
+    user.role = UserRole.SUPER_ADMIN
+    db.commit()
+    return "success"
